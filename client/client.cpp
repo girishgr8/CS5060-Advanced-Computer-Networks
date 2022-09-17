@@ -9,7 +9,7 @@
 #define FAILURE -1
 #define BACKLOG 5
 #define SERVERIPADDR "127.0.0.1"
-#define MAXBUFFERSIZE 200000
+#define MAXBUFFERSIZE 2048
 
 using namespace std;
 
@@ -17,28 +17,6 @@ struct sockaddr_in cln;
 
 FD_SET fr, fw, fe;
 int maxFd;
-
-// void writefile(int sockfd, FILE *fp)
-// {
-//     ssize_t n;
-//     char buff[MAX_LINE] = {0};
-//     while ((n = recv(sockfd, buff, MAX_LINE, 0)) > 0)
-//     {
-//         total += n;
-//         if (n == -1)
-//         {
-//             perror("Receive File Error");
-//             exit(1);
-//         }
-
-//         if (fwrite(buff, sizeof(char), n, fp) != n)
-//         {
-//             perror("Write File Error");
-//             exit(1);
-//         }
-//         memset(buff, 0, MAX_LINE);
-//     }
-// }
 
 int writeFile(int sockFd, char *filename)
 {
@@ -67,19 +45,18 @@ int writeFile(int sockFd, char *filename)
     //     }
     // }
 
-    int retVal;
-    FILE *fp;
+    int bytesRcvd;
+    FILE *fp = fopen("./samplePDF.pdf", "wb");
     char buffer[MAXBUFFERSIZE];
-
-    fp = fopen("data.txt", "wb");
     int i = 0;
+    int totalSizeRcvd = 0;
     while (1)
     {
         memset(&buffer, 0, MAXBUFFERSIZE);
-        retVal = recv(sockFd, buffer, MAXBUFFERSIZE, 0);
+        bytesRcvd = recv(sockFd, buffer, MAXBUFFERSIZE, 0);
         // Sleep(500);
-        cout << "buffer = " << buffer << ", size at i = " << i << "\t" << strlen(buffer) << "\tretVal = " << retVal << endl;
-        // cout << "Iteration " << (i++) << ", size = " << strlen(buffer) << ", retVal = " << retVal << endl;
+        // cout << "buffer = " << buffer << ", size at i = " << (i++) << "\t" << strlen(buffer) << "\tbytesRcvd = " << bytesRcvd << endl;
+        cout << "Iteration " << (i++) << ", size = " << strlen(buffer) << ", bytesRcvd = " << bytesRcvd << endl;
         if (strcmp(buffer, "FEND") == ZERO)
         {
             cout << "Requested file received" << endl;
@@ -88,14 +65,16 @@ int writeFile(int sockFd, char *filename)
             // return SUCCESS;
         }
         // fprintf(fp, "%s", buffer);
-        int writtenBytes = fwrite(buffer, ONE, strlen(buffer), fp);
-        cout << "writtenBytes = " << writtenBytes << endl;
+        totalSizeRcvd += bytesRcvd;
+        int bytesWritten = fwrite(buffer, ONE, bytesRcvd, fp);
+        cout << "bytesWritten = " << bytesWritten << endl;
         memset(&buffer, 0, MAXBUFFERSIZE);
         buffer[0] = 'A';
         buffer[1] = 'C';
         buffer[2] = 'K';
-        retVal = send(sockFd, buffer, strlen(buffer), 0);
+        int retVal = send(sockFd, buffer, strlen(buffer), 0);
     }
+    cout << "totalSizeRcvd = " << totalSizeRcvd << endl;
     fclose(fp);
     return SUCCESS;
 }
