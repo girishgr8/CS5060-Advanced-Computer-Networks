@@ -34,13 +34,11 @@ int sendFile(FILE *fp, int clnSockFd)
     rewind(fp);
     int i = 1;
     int totalBytesRead = 0;
-    int buffSize = 59353;
-    char writeBuffer[59353] = {0};
+    char writeBuffer[MAXBUFFERSIZE] = {0};
 
     while (!feof(fp))
     {
-        int bytesRead = fread(writeBuffer, 1, buffSize, fp);
-        cout << "Bytes Read: " << bytesRead << endl;
+        int bytesRead = fread(writeBuffer, 1, MAXBUFFERSIZE, fp);
         totalBytesRead += bytesRead;
         int retVal = send(clnSockFd, writeBuffer, bytesRead, 0);
         memset(&writeBuffer, 0, bytesRead);
@@ -48,24 +46,16 @@ int sendFile(FILE *fp, int clnSockFd)
         {
             cout << "Error in sending file" << endl;
         }
-        memset(&buffer, 0, MAXBUFFERSIZE);
-        retVal = recv(clnSockFd, buffer, MAXBUFFERSIZE, 0);
-        if (strcmp(buffer, "ACK"))
-        {
-            cout << "Packet " << (i++) << " received by client !" << endl;
-            memset(&buffer, 0, retVal);
-        }
-        Sleep(500);
+        // memset(&buffer, 0, MAXBUFFERSIZE);
+        Sleep(50);
     }
-    // cout << "totalBytesRead = " << totalBytesRead << endl;
-    // cout << "Upar dekho upar" << endl;
-    buffer[0] = 'F';
-    buffer[1] = 'E';
-    buffer[2] = 'N';
-    buffer[3] = 'D';
-    int retVal = send(clnSockFd, buffer, strlen(buffer), 0);
-    // cout << "retVal = " << retVal << endl;
-    // cout << "Niche dekho niche" << endl;
+    memset(&writeBuffer, 0, MAXBUFFERSIZE);
+    writeBuffer[0] = 'F';
+    writeBuffer[1] = 'E';
+    writeBuffer[2] = 'N';
+    writeBuffer[3] = 'D';
+    int retVal = send(clnSockFd, writeBuffer, strlen(writeBuffer), 0);
+    cout << "Requested file sent to client: " << clnSockFd << endl;
     fclose(fp);
     return SUCCESS;
 }
@@ -93,12 +83,17 @@ void processNewMsgFromClient(int clnSockFd)
     else
     {
         cout << "New Message received from client is: " << buffer;
-        fp = fopen("./samplePDF.pdf", "rb");
+        buffer[strlen(buffer) - 1] = '\0';
+        fp = fopen(buffer, "rb");
+        memset(&buffer, 0, MAXBUFFERSIZE);
         if (fp == NULL)
         {
-            cout << "Cannot send the requested object. File does not exist !" << endl;
+            cout << "Cannot send the requested object from client " << clnSockFd << ". File does not exist !" << endl;
+            // const char *errorReply = "Cannot send the requested object. File does not exist !";
+            // int errorReplyLength = strlen(msg);
+            // send(clnSockFd, msg, msgLen, 0);
         }
-        memset(&buffer, 0, MAXBUFFERSIZE);
+
         buffer[0] = 'F';
         buffer[1] = 'B';
         buffer[2] = 'E';
@@ -110,10 +105,10 @@ void processNewMsgFromClient(int clnSockFd)
         retVal = sendFile(fp, clnSockFd);
         if (retVal == SUCCESS)
         {
-            // // Sending response back to the client
-            // const char *msg = "File successfully sent to client : ";
-            // int msgLen = strlen(msg);
-            // send(clnSockFd, msg, msgLen, 0);
+            // Sending response back to the client
+            const char *msg = "File successfully sent to client : ";
+            int msgLen = strlen(msg);
+            send(clnSockFd, msg, msgLen, 0);
             cout << "*****************************************************" << endl;
         }
         else

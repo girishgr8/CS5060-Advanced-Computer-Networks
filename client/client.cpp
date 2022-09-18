@@ -18,63 +18,28 @@ struct sockaddr_in cln;
 FD_SET fr, fw, fe;
 int maxFd;
 
-int writeFile(int sockFd, char *filename)
+int writeFile(int sockFd, char filename[])
 {
-    // cout << "Inside write file" << endl;
-
-    // string fileData = "";
-    // while (1)
-    // {
-    //     memset(&buffer, 0, MAXBUFFERSIZE);
-    //     int retVal = recv(sockFd, buffer, MAXBUFFERSIZE, 0);
-    //     int bufferLen = strlen(buffer);
-    //     if (retVal == ZERO)
-    //     {
-    //         cout << "Server closed the connection gracefully" << endl;
-    //     }
-    //     // recv() call returns number of bytes received
-    //     else if (retVal > ZERO)
-    //     {
-    //         if (bufferLen == ZERO)
-    //         {
-    //             cout << "" << endl;
-    //             break;
-    //         }
-    //         cout << "Server replied: " << buffer << endl;
-    //         fileData += buffer;
-    //     }
-    // }
-
     int bytesRcvd;
-    FILE *fp = fopen("./samplePDF.pdf", "wb");
+    filename[strlen(filename) - 1] = '\0';
+    FILE *fp = fopen(filename, "wb");
     char buffer[MAXBUFFERSIZE];
-    int i = 0;
+    int i = 1;
     int totalSizeRcvd = 0;
     while (1)
     {
         memset(&buffer, 0, MAXBUFFERSIZE);
         bytesRcvd = recv(sockFd, buffer, MAXBUFFERSIZE, 0);
-        // Sleep(500);
-        // cout << "buffer = " << buffer << ", size at i = " << (i++) << "\t" << strlen(buffer) << "\tbytesRcvd = " << bytesRcvd << endl;
-        cout << "Iteration " << (i++) << ", size = " << strlen(buffer) << ", bytesRcvd = " << bytesRcvd << endl;
         if (strcmp(buffer, "FEND") == ZERO)
         {
             cout << "Requested file received" << endl;
             break;
-            // fclose(fp);
-            // return SUCCESS;
         }
-        // fprintf(fp, "%s", buffer);
         totalSizeRcvd += bytesRcvd;
         int bytesWritten = fwrite(buffer, ONE, bytesRcvd, fp);
-        cout << "bytesWritten = " << bytesWritten << endl;
-        memset(&buffer, 0, MAXBUFFERSIZE);
-        buffer[0] = 'A';
-        buffer[1] = 'C';
-        buffer[2] = 'K';
-        int retVal = send(sockFd, buffer, strlen(buffer), 0);
+        // cout << "bytesWritten = " << bytesWritten << ", totalSizeRcvd = " << totalSizeRcvd << endl;
     }
-    cout << "totalSizeRcvd = " << totalSizeRcvd << endl;
+    // cout << "totalSizeRcvd = " << totalSizeRcvd << endl;
     fclose(fp);
     return SUCCESS;
 }
@@ -144,29 +109,27 @@ int main()
             cout << "Enter filepath for the request object: " << endl;
             fgets(buffer, MAXBUFFERSIZE, stdin);
             int bufferLen = strlen(buffer);
-
+            char filename[MAXBUFFERSIZE];
+            strcpy(filename, buffer);
             send(sockFd, buffer, strlen(buffer), 0);
             memset(&buffer, 0, MAXBUFFERSIZE);
             int retVal = recv(sockFd, buffer, MAXBUFFERSIZE, 0);
-            cout << "Here " << retVal << " " << buffer << endl;
+            // cout << "Here " << retVal << " " << buffer << endl;
             if (retVal < ZERO)
             {
-                cout << "Some error occured" << endl;
+                cout << "Some error occured: " << endl;
                 exit(1);
             }
             if (strcmp(buffer, "FBEGIN") == ZERO)
             {
-                cout << "Yes lets start file transfer" << endl;
-                retVal = writeFile(sockFd, buffer);
-            }
-            // retVal = writeFile(sockFd, buffer);
-            cout << "retVal " << retVal << endl;
-            if (retVal == SUCCESS)
-            {
-                // The closesocket() call closes an existing/open socket.
-                closesocket(sockFd);
-                cout << "closesocket() call done";
-                break;
+                retVal = writeFile(sockFd, filename);
+                if (retVal == SUCCESS)
+                {
+                    // The closesocket() call closes an existing/open socket.
+                    closesocket(sockFd);
+                    cout << "Closing the socket now !!";
+                    break;
+                }
             }
         }
     }
