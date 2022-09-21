@@ -25,25 +25,39 @@ int clientsInQueue = 0;
 
 int clientSockFd[MAXCLIENTS];
 
-int sendFile(FILE *fp, int clnSockFd)
+// sendFileToClient() function reads the requested file from the local directory
+// It iteratively reads no. of bytes = buffersize at one go and sends those many bytes to client
+// If the file ptr has reached "End-Of-File(EOF)" then indicate the same to client by send "FEND" flag.
+int sendFileToClient(FILE *fp, char buffer[], int clnSockFd)
 {
+    memset(buffer, 0, MAXBUFFERSIZE);
+    // send FEBGIN" to mark the beginning of file transfer
+    buffer[0] = 'F';
+    buffer[1] = 'B';
+    buffer[2] = 'E';
+    buffer[3] = 'G';
+    buffer[4] = 'I';
+    buffer[5] = 'N';
+    buffer[6] = '\0';
 
-    char buffer[MAXBUFFERSIZE];
-    memset(&buffer, 0, MAXBUFFERSIZE);
+    int retCode = send(clnSockFd, buffer, strlen(buffer), FLAGS);
+
+    // Read the size of file (in terms of number of bytes)
     fseek(fp, 0, SEEK_END);
     const long fileSize = ftell(fp);
     cout << "Filesize (in Bytes) = " << fileSize << endl;
     rewind(fp);
-    int i = 1;
+
     int totalBytesRead = 0;
     char writeBuffer[MAXBUFFERSIZE] = {0};
 
+    // read until file ptr reached EOF
     while (!feof(fp))
     {
         int bytesRead = fread(writeBuffer, ONE, MAXBUFFERSIZE, fp);
         totalBytesRead += bytesRead;
         int retCode = send(clnSockFd, writeBuffer, bytesRead, FLAGS);
-        memset(&writeBuffer, 0, bytesRead);
+        memset(writeBuffer, 0, bytesRead);
         if (retCode < ZERO)
         {
             cout << "Error in sending file to client" << clnSockFd << endl;
@@ -51,13 +65,15 @@ int sendFile(FILE *fp, int clnSockFd)
         }
         Sleep(50);
     }
-    memset(&writeBuffer, 0, MAXBUFFERSIZE);
+    memset(writeBuffer, 0, MAXBUFFERSIZE);
+    // send "FEND" to mark the ending of file transfer
     writeBuffer[0] = 'F';
     writeBuffer[1] = 'E';
     writeBuffer[2] = 'N';
     writeBuffer[3] = 'D';
     writeBuffer[4] = '\0';
-    int retCode = send(clnSockFd, writeBuffer, strlen(writeBuffer), FLAGS);
+    retCode = send(clnSockFd, writeBuffer, strlen(writeBuffer), FLAGS);
+
     cout << "Requested file sent to client: " << clnSockFd << endl;
     fclose(fp);
     return SUCCESS;
@@ -67,13 +83,13 @@ void processNewMsgFromClient(int clnSockFd)
 {
     char buffer[MAXBUFFERSIZE];
     FILE *fp;
-    memset(&buffer, 0, MAXBUFFERSIZE);
+    memset(buffer, 0, MAXBUFFERSIZE);
     cout << "Processing new message from the existing client: " << clnSockFd << endl;
     int retCode = recv(clnSockFd, buffer, MAXBUFFERSIZE, FLAGS);
     if (retCode < ZERO)
     {
         cout << "Connection aborted. Closing the connection for client: " << clnSockFd << endl;
-        // If connection was aborted
+        // If connection was aborted, remove the client sockFd from the queue of clients
         if (WSAGetLastError() == WSAECONNABORTED)
         {
             closesocket(clnSockFd);
@@ -82,6 +98,7 @@ void processNewMsgFromClient(int clnSockFd)
                 if (clientSockFd[i] == clnSockFd)
                 {
                     clientSockFd[i] = 0;
+                    clientsInQueue--;
                     break;
                 }
             }
@@ -89,10 +106,9 @@ void processNewMsgFromClient(int clnSockFd)
     }
     else
     {
-        cout << "New Message received from client is: " << buffer;
-        buffer[strlen(buffer) - 1] = '\0';
+        cout << "New Message received from client is: " << buffer << endl;
         fp = fopen(buffer, "rb");
-        memset(&buffer, 0, MAXBUFFERSIZE);
+        memset(buffer, 0, MAXBUFFERSIZE);
         if (fp == NULL)
         {
             cout << "Cannot send the requested object from client " << clnSockFd << ". File does not exist !" << endl;
@@ -101,57 +117,45 @@ void processNewMsgFromClient(int clnSockFd)
             retCode = send(clnSockFd, errMsg, errLen, FLAGS);
             return;
         }
-
-        buffer[0] = 'F';
-        buffer[1] = 'B';
-        buffer[2] = 'E';
-        buffer[3] = 'G';
-        buffer[4] = 'I';
-        buffer[5] = 'N';
-        retCode = send(clnSockFd, buffer, strlen(buffer), FLAGS);
-        retCode = sendFile(fp, clnSockFd);
+        retCode = sendFileToClient(fp, buffer, clnSockFd);
         if (retCode == SUCCESS)
         {
-
             // Sending response back to the client
             const char *msg = "File successfully sent to client : ";
             int msgLen = strlen(msg);
             send(clnSockFd, msg, msgLen, FLAGS);
             cout << "*****************************************************" << endl;
         }
-        else
-        {
-        }
     }
 }
 
-void processRequest(int sockFd)
+void processClientRequest(int sockFd)
 {
-    cout << "New client request arrived !" << endl;
-    // New client request arrived
     if (FD_ISSET(sockFd, &fr))
     {
         int clnAddrLen = sizeof(struct sockaddr);
         if (clientsInQueue == MAXCLIENTS)
         {
-            cout << "Server is busy with existing clients, new clients cannot be handled" << endl;
+            cout << "Server is busy with existing clients, new clients cannot be handled !" << endl;
         }
         fflush(stdout);
         int clnSockFd = accept(sockFd, NULL, &clnAddrLen);
+        // if some client is accepted successfully, then put that client's socket descriptor in the array
         if (clnSockFd > ZERO)
         {
-            if (clientsInQueue < MAXCLIENTS)
+            for (int i = 0; i < MAXCLIENTS; i++)
             {
-                clientSockFd[clientsInQueue++] = clnSockFd;
-                const char *buffer = "Connection setup successful";
-                int len = strlen(buffer);
-                send(clnSockFd, buffer, len, FLAGS);
+                if (clientSockFd[i] == 0)
+                    clientSockFd[i] = clnSockFd;
             }
+            const char *buffer = "Connection setup successful";
+            int len = strlen(buffer);
+            send(clnSockFd, buffer, len, FLAGS);
         }
     }
     else
     {
-        // Got a new message from the existing client
+        // Got a new message from the existing connected client
         for (int i = 0; i < MAXCLIENTS; i++)
         {
             if (FD_ISSET(clientSockFd[i], &fr))
@@ -169,7 +173,6 @@ int main()
     // Step 1: Initialise WSA variable
     // The WSACleanup() function terminates use of the Winsock DLL library
     // The WSAStartup()function initiates use of the Winsock DLL by a process
-
     WSADATA ws;
 
     if (WSAStartup(MAKEWORD(2, 2), &ws) < ZERO)
@@ -246,9 +249,10 @@ int main()
 
     maxFd = sockFd;
 
-    // Step 5: Keep listening to new incoming request and start serving the requests in queue
+    // Step 5: Keep listening to new incoming request and start serving the existing requests in queue
     while (TRUE)
     {
+        // clear the FD sets for read, write and exception socket descriptors
         FD_ZERO(&fr);
         FD_ZERO(&fw);
         FD_ZERO(&fe);
@@ -275,7 +279,9 @@ int main()
         // retCode contains the total number of socket handles that are ready and contained in the FD_SET structures
         if (readySocketFd > ZERO)
         {
-            processRequest(sockFd);
+            cout << "New client request arrived !" << endl;
+            // New client request arrived
+            processClientRequest(sockFd);
         }
         else if (readySocketFd == ZERO)
         {
@@ -283,7 +289,7 @@ int main()
         }
         else
         {
-            cout << "Error in selecting the client's request" << endl;
+            cout << "Error in selecting the client's request !" << endl;
             WSACleanup();
             exit(EXIT_FAILURE);
         }
