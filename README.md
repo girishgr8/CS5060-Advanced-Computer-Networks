@@ -5,14 +5,9 @@
 ## PROBLEM STATEMENT
 
 1.  Part A
+    a. Create a server (file server) program. It listens on a TCP socket. The server is meant to send specific file(s) (.txt/.png/.pdf) to its client depending on the file requested (file path).
 
-        a. Create a server (file server) program. It listens on a TCP socket. The server is meant to send specific file(s) (.txt/.png/.pdf) to its client
-
-    depending on the file requested (file path).
-
-        b. Create a client program which interacts with the file server on TCP. Client TCP connects to the file server to fetch a file given the file path in the
-
-    server. Assume that a valid client knows the ip address, port number of the file server.
+    b. Create a client program which interacts with the file server on TCP. Client TCP connects to the file server to fetch a file given the file path in the server. Assume that a valid client knows the ip address, port number of the file server.
 
 2.  Part B
 
