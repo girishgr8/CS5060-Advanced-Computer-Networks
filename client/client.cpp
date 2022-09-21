@@ -26,6 +26,7 @@ struct sockaddr_in cln;
 // If we receieve "FEND" flag in the buffer, then it marks end of writing into the file.
 int writeDataToFile(int sockFd, char buff[], char filename[])
 {
+    // Once "FBEGIN" flag is received, start writing all the data to be received in the file
     int noOfBytesRcvd;
     if (strcmp(buff, "FBEGIN") != ZERO)
     {
@@ -37,7 +38,7 @@ int writeDataToFile(int sockFd, char buff[], char filename[])
     int totalSizeRcvd = 0;
     while (TRUE)
     {
-        memset(&buffer, 0, MAXBUFFERSIZE);
+        memset(buffer, 0, MAXBUFFERSIZE);
         noOfBytesRcvd = recv(sockFd, buffer, MAXBUFFERSIZE, 0);
         // if the client receives "FEND" flag in buffer, then it indicates the ending of file transfer
         if (strncmp(buffer, "FEND", 4) == ZERO)
@@ -108,7 +109,7 @@ int main()
         // connection setup will be successful, then receive the data and
         // write to file until the server does not send "FEND" flag to mark end of file transfer
         char buffer[MAXBUFFERSIZE];
-        memset(&buffer, '\0', MAXBUFFERSIZE);
+        memset(buffer, '\0', MAXBUFFERSIZE);
         retCode = recv(sockFd, buffer, MAXBUFFERSIZE, 0);
         if (strcmp(buffer, "Connection setup successful") != ZERO)
         {
@@ -127,25 +128,26 @@ int main()
             fgets(buffer, MAXBUFFERSIZE, stdin);
             int bufferLen = strlen(buffer);
             buffer[bufferLen - 1] = '\0';
+
             char filename[MAXBUFFERSIZE];
             strcpy(filename, buffer);
 
             // send the filename of required file to the server
             retCode = send(sockFd, buffer, strlen(buffer), 0);
-            memset(&buffer, 0, MAXBUFFERSIZE);
+            memset(buffer, 0, MAXBUFFERSIZE);
 
             // if the server has the requested file, it will send "FBEGIN" flag to client to mark the start of the file transfer
             retCode = recv(sockFd, buffer, MAXBUFFERSIZE, 0);
 
             if (retCode < ZERO)
             {
-                cout << "Some error occured !! Error code :" << WSAGetLastError() << endl;
+                cout << "Some error occured !! Error code: " << WSAGetLastError() << endl;
                 WSACleanup();
                 exit(EXIT_FAILURE);
             }
+            // Now write data to the file on client's side
             retCode = writeDataToFile(sockFd, buffer, filename);
 
-            // Once "FBEGIN" flag is received, start writing all the data to be received in the file.
             if (retCode == SUCCESS)
             {
                 // The closesocket() call closes an existing/open socket.
@@ -160,7 +162,7 @@ int main()
                 cout << "Closing the socket now !!" << endl;
                 break;
             }
-            // if file does not exist then close the connection
+            // If file does not exist then close the connection
             if (strcmp(buffer, "File not exist") == ZERO)
             {
                 cout << "Your requested file does not exist on server !" << endl;
