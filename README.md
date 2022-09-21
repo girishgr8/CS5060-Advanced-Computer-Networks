@@ -65,6 +65,12 @@ $ ./client
 
 ---
 
+## DEMO
+
+![Demo](https://github.com/girishgr8/CS5060-Advanced-Computer-Networks/blob/main/demo.gif)
+
+---
+
 ## HOW IT WORKS
 
 > The basic idea is to create one single server and one client program which will communicate over an established socket connection and on this connection file transfer will occur.
@@ -141,4 +147,4 @@ pledge to uphold the principles of honesty and responsibility at CSE@IITH. In ad
 
 **This Assignment was done a part of our Semester-1 course on Advanced Computer Networks during M.Tech at IIT Hyderabad.**
 
-<h3 align="center">**Developed with ❤️ by <a href="https://github.com/girishgr8">Girish Thatte</a>.**</h3>
+<h3 align="center"><b>Developed with ❤️ by <a href="https://github.com/girishgr8">Girish Thatte</a>.</b></h3>
