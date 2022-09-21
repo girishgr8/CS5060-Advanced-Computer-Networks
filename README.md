@@ -104,17 +104,33 @@ $ ./client
     - If the **accept()** call was successful, then server will send "Connection setup successful" as an acknowledgment to the client using the **send()** call.
     - Server then receives the filename of the file which client wants using **recv()** call in a buffer.
  
-6. sendFileToClient() function: 
+6. **sendFileToClient() function:**
     - Firstly, server sends **"FEBGIN"** to mark the beginning of file transfer so that client adds whatever data comes to it from now will be written into file on client side.
-    - In one go, server reads no. of bytes = buffersize from the file and sends those many bytes to client. If the client requests a valid file from server (i.e. if the file exists on the server), then server opens the file in _"rb"_ mode and keeps on reading the data from file until file ptr reaches the end of file.
+    - In one go, server reads _no. of bytes = buffersize_ from the file and sends those many bytes to client. If the client requests a valid file from server (i.e. if the file exists on the server), then server opens the file in _"rb"_ mode and keeps on reading the data from file until file ptr reaches the end of file.
 
-- [x] Visualise the trend graphically
-- [x] Statewise visualisation
-- [x] Districtwise zones
-- [x] India's Heatmap according to count
-- [x] Join Slack channel to get updated stats every 1 hour.
-- [x] Top and latest news update
+#### For Part (A) : CLIENT CODE LOGIC
 
+1. **Setup the socket programming enviornment on Windows:**
+    - **WSADATA** data structure contains info about the Windows' way of socket implementation
+    - **WSAStartup()** function initialises the winsock library and performs all necessary actions to enable socket programming environment.
+    - **MAKEWORD(2,2)** is passed in WSAStartup() call, to load the 2.2 version of Winsock DLL library on the system.
+
+2. **socket() system call:**
+    - This creates a socket which can be used for communication with other networks.
+    - This call returns the socket descriptor (imagine this as socket id)
+    - Pass **AF_INET** which will use IPv4 version, **SOCK_STREAM** and **IPROTO_TCP** will set the TCP socket stream (i.e. connection-oriented stream)
+    
+3. **connect() system call:**
+    - In step 2, we have just created the socket, but the socket is not assigned any IP address or Port number which can be used by the client to connect.
+    - connect() will connect to the server's socket, using the address information such as IP address, Address Family and Port number on which server is listening as specified by the variable of type _sockaddr_in_ to the connect which is described by the socket descriptor returned in above socket() call.
+
+4. **Send filename of required file to server:**
+    - Read the filename required by the client to the server by reading filename from the stdin console.
+    - Send this filename to server using send() call.
+
+5. **writeDataToFile() function:**
+    - Once "FBEGIN" flag is received in the buffer, start writing everything into the newly created file on client's side till "FEND" flag is received in buffer.
+    - The file for writing on client side is opened in _"wb"_ mode.
 
 ---
 
