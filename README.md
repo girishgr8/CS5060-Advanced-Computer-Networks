@@ -9,13 +9,7 @@
     a. Create a server (file server) program. It listens on a TCP socket. The server is meant to send specific file(s) (.txt/.png/.pdf) to its client depending on the file requested (file path).
 
     b. Create a client program which interacts with the file server on TCP. Client TCP connects to the file server to fetch a file given the file path in the server. Assume that a valid client knows the ip address, port number of the file server.
-
-2.  Part B
-
-    a. Extend the file server program in Part A to serve multiple clients in parallel. i.e. if two different clients ask for a file, the server shall satisfy both the clients in parallel without making any client wait. Maximum number of clients to honor can be set at the server.
-
-    b. Create one server program as per #a above and many instances of valid clients mentioned in Part A and check the working of parallel file download from the server. Check for all possible errors for which the server may give error message/error code to the client. E.g., file doesn’t exist. Check the situation when the server is busy serving other clients and one client has to wait for the server to start serving it after serving other clients.
-
+    
 ---
 
 ## STEPS TO FOLLOW
