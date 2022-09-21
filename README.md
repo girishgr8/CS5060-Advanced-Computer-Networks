@@ -22,7 +22,7 @@ server. Assume that a valid client knows the ip address, port number of the file
 
 ### STEPS TO FOLLOW
 
-Clone the repository and do the following:
+Clone the repository and following the below steps:
 
 **To run Part (A) of the problem statement:**
 
@@ -75,9 +75,45 @@ $ ./client
 
 ### HOW IT WORKS
 
-For Part (A)
+> The basic idea is to create one single server and one client program which will communicate over an established socket connection and on this connection file transfer will occur.
 
-1. The basic idea is to create one single server and one client program which will communicate over an established socket connection and on this connection file transfer will occur.
+#### For Part (A) : SERVER CODE LOGIC 
+
+1. **Setup the socket programming enviornment on Windows:**
+    - **WSADATA** data structure contains info about the Windows' way of socket implementation
+    - **WSAStartup()** function initialises the winsock library and performs all necessary actions to enable socket programming environment.
+    - **MAKEWORD(2,2)** is passed in WSAStartup() call, to load the 2.2 version of Winsock DLL library on the system.
+
+2. **socket() system call:**
+    - This creates a socket which can be used for communication with other networks.
+    - This call returns the socket descriptor (imagine this as socket id)
+    - Pass **AF_INET** which will use IPv4 version, **SOCK_STREAM** and **IPROTO_TCP** will set the TCP socket stream (i.e. connection-oriented stream)
+
+3. **bind() system call:**
+    - In step 2, we have just created the socket, but the socket is not assigned any IP address or Port number which can be used by the client to connect.
+    - bind() will bind the address information such as IP address, Address Family and Port number specified by the variable of type _sockaddr_in_ to the socket which is described by the socket descriptor returned in above socket() call.
+    
+4. **listen() system call:**
+    - Using this, server will listen to new incoming connection requests, i.e. server specifies it is now ready to accept new clients.
+    - We pass _backlog_ parameter in the call which defines the maximum length to which the queue of pending connections for given socket descriptor may grow.
+    - If any new connection request arrives when the queue is full, the client will receive an error _ECONNREFUSED_
+    
+5. **processClientRequest() function:**
+    - This function does the handling of the client's requests incoming to server.
+    - Firstly, **accept()** call accepts the client connection requests.
+    - If the **accept()** call was successful, then server will send "Connection setup successful" as an acknowledgment to the client using the **send()** call.
+    - Server then receives the filename of the file which client wants using **recv()** call in a buffer.
+ 
+6. sendFileToClient() function: 
+    - Firstly, server sends **"FEBGIN"** to mark the beginning of file transfer so that client adds whatever data comes to it from now will be written into file on client side.
+    - In one go, server reads no. of bytes = buffersize from the file and sends those many bytes to client. If the client requests a valid file from server (i.e. if the file exists on the server), then server opens the file in _"rb"_ mode and keeps on reading the data from file until file ptr reaches the end of file.
+
+- [x] Visualise the trend graphically
+- [x] Statewise visualisation
+- [x] Districtwise zones
+- [x] India's Heatmap according to count
+- [x] Join Slack channel to get updated stats every 1 hour.
+- [x] Top and latest news update
 
 
 ---
