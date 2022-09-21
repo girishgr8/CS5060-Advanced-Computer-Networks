@@ -102,6 +102,7 @@ void processNewMsgFromClient(int clnSockFd)
                     break;
                 }
             }
+            Sleep(50);
         }
     }
     else
@@ -287,11 +288,6 @@ int main()
         {
             cout << "No client's request arrived on port: " << PORT << endl;
         }
-        else
-        {
-            cout << "Error in selecting the client's request !" << endl;
-            WSACleanup();
-            exit(EXIT_FAILURE);
-        }
+        readySocketFd = 0;
     }
 }

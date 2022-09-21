@@ -9,7 +9,7 @@
     a. Create a server (file server) program. It listens on a TCP socket. The server is meant to send specific file(s) (.txt/.png/.pdf) to its client depending on the file requested (file path).
 
     b. Create a client program which interacts with the file server on TCP. Client TCP connects to the file server to fetch a file given the file path in the server. Assume that a valid client knows the ip address, port number of the file server.
-    
+
 ---
 
 ## STEPS TO FOLLOW
@@ -139,6 +139,6 @@ pledge to uphold the principles of honesty and responsibility at CSE@IITH. In ad
 **Name of the student: THATTE GIRISH MAKARAND** <br>
 **Roll No: CS22MTECH11005**
 
-<b> This Assignment was done a part of our Semester-1 course on Advanced Computer Networks during M.Tech at IIT Hyderabad. </b>
+**This Assignment was done a part of our Semester-1 course on Advanced Computer Networks during M.Tech at IIT Hyderabad.**
 
-<h3 align="center"><b>Developed with ❤️ by <a href="https://github.com/girishgr8">Girish Thatte</a>.</b></h3>
+<h3 align="center">**Developed with ❤️ by <a href="https://github.com/girishgr8">Girish Thatte</a>.**</h3>
