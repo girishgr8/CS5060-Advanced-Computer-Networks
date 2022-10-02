@@ -1,4 +1,4 @@
-<h2 align="center">:computer: Assignment 2 - Socket Programming (BootStrapServer, FileServers & File Transfer) :file_folder:</h2>
+<h2 align="center">:computer: Assignment 3 - Socket Programming (BootStrapServer, FileServers & File Transfer) :file_folder:</h2>
 
 ---
 
