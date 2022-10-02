@@ -13,7 +13,7 @@
     2. Create a file server program.
         a. Upon starting this file server, it registers to bootstrap server on UDP with the details given in step#1.
 
-## **Part B**
+**Part B**
 
     a. Extend the file server program in Part A. Once it registers to the BootStrap server successfully in Part A, it listens on TCP socket. The server is meant to send a specific file to its clients depending on the service type it is intended for. Like a video server would send a video file type which a client asks for.
 
