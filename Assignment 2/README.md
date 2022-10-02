@@ -65,12 +65,6 @@ $ ./client
 
 ---
 
-## DEMO
-
-![Demo](https://github.com/girishgr8/CS5060-Advanced-Computer-Networks/blob/main/demo.gif)
-
----
-
 ## HOW IT WORKS
 
 > The basic idea is to create one single server and one client program which will communicate over an established socket connection and on this connection file transfer will occur.
